@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SchedulerLab – CPU Process Scheduling Solver</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3Crect x='6' y='13' width='6' height='9' rx='1' fill='%23fff'/%3E%3Crect x='14' y='8' width='6' height='14' rx='1' fill='%23fde047'/%3E%3Crect x='22' y='11' width='5' height='11' rx='1' fill='%2334d399'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0e1f;--card:#121833;--line:#27305a;--tx:#eef0ff;--mu:#9aa3d0;--ac:#818cf8;--r:16px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 Inter,system-ui,sans-serif;overflow-x:hidden}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif;line-height:1.15;margin:0}
+.mono{font-family:'JetBrains Mono',monospace}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+nav{position:sticky;top:0;z-index:20;background:rgba(10,14,31,.8);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;gap:22px;height:62px}
+.logo{font:700 1.15rem 'Space Grotesk';margin-right:auto}.logo b{color:var(--ac)}
+nav a{color:var(--mu);text-decoration:none;font-size:.9rem}nav a:hover{color:#fff}
+.btn{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff!important;border:0;border-radius:999px;padding:12px 24px;font:600 .95rem Inter;cursor:pointer;text-decoration:none;display:inline-block;box-shadow:0 8px 30px rgba(99,102,241,.4);transition:.2s}
+.btn:hover{transform:translateY(-2px)}
+.hero{position:relative;padding:80px 0 60px;overflow:hidden}
+.hero:before,.hero:after{content:"";position:absolute;width:520px;height:520px;border-radius:50%;filter:blur(110px);opacity:.35;z-index:0}
+.hero:before{background:#6366f1;top:-200px;left:-120px}.hero:after{background:#ec4899;right:-160px;top:-60px}
+.hero .wrap{position:relative;z-index:1;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center}
+.tag{display:inline-block;font:600 .75rem 'JetBrains Mono';letter-spacing:.1em;text-transform:uppercase;color:#a5b4fc;border:1px solid var(--line);border-radius:999px;padding:6px 14px;margin-bottom:18px;background:#121833}
+.hero h1{font-size:clamp(2.2rem,5vw,3.8rem)}
+.grad{background:linear-gradient(90deg,#818cf8,#f472b6,#fbbf24);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mu);font-size:1.1rem;max-width:520px;margin:18px 0 28px}
+.stats{display:flex;gap:28px;margin-top:34px;flex-wrap:wrap}.stats div b{display:block;font:700 1.8rem 'Space Grotesk'}.stats span{color:var(--mu);font-size:.8rem}
+.float{animation:fl 5s ease-in-out infinite}@keyframes fl{50%{transform:translateY(-14px)}}
+section{padding:70px 0}
+.sh{text-align:center;margin-bottom:40px}.sh h2{font-size:clamp(1.7rem,3.5vw,2.5rem)}.sh p{color:var(--mu);max-width:600px;margin:12px auto 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-top:20px}
+.terms .card{padding:16px}.terms b{color:var(--ac);font:700 .8rem 'JetBrains Mono'}.terms p{margin:6px 0 0;font-size:.85rem;color:var(--mu)}
+.algos{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.algo{border-top:4px solid var(--c);transition:.25s}.algo:hover{transform:translateY(-6px);box-shadow:0 18px 40px -18px var(--c)}
+.algo i{font:700 .75rem 'JetBrains Mono';color:var(--c);letter-spacing:.1em}.algo h3{font-size:1.25rem;margin:6px 0 8px}.algo p{color:var(--mu);font-size:.9rem;margin:0 0 10px}
+.algo small{display:block;font-size:.8rem;color:#c7cbef}.algo small b{color:var(--c)}
+.solver{background:linear-gradient(180deg,#0d1230,#0a0e1f);border-block:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:22px;align-items:start}
+.row{display:grid;grid-template-columns:44px 1fr 1fr 1fr 28px;gap:7px;align-items:center;margin-bottom:7px}
+.row.h span{font:600 .65rem 'JetBrains Mono';color:var(--mu);text-transform:uppercase}
+input{width:100%;background:#0a0e1f;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px;font:500 .9rem 'JetBrains Mono'}
+input:focus{outline:2px solid var(--ac)}
+.x{background:0;border:1px solid var(--line);color:var(--mu);border-radius:8px;height:34px;cursor:pointer}.x:hover{color:#f87171}
+.add{width:100%;background:0;border:1px dashed var(--line);color:var(--mu);border-radius:8px;padding:9px;cursor:pointer;margin:4px 0 16px}.add:hover{color:#fff;border-color:var(--ac)}
+label{display:block;font:600 .7rem 'JetBrains Mono';color:var(--mu);text-transform:uppercase;margin-bottom:6px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.win{border:1px solid var(--wc);border-radius:var(--r);padding:20px;margin-bottom:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--wc) 16%,#121833),#121833);position:relative;overflow:hidden}
+.win h3{color:var(--wc);font-size:1.3rem}.win small{font:600 .7rem 'JetBrains Mono';color:var(--mu);text-transform:uppercase;letter-spacing:.1em}
+.win ol{margin:12px 0 0;padding-left:20px;font-size:.88rem}.win li{margin-bottom:5px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.tab{background:#0a0e1f;border:1px solid var(--line);color:var(--mu);border-radius:999px;padding:7px 14px;font:600 .78rem 'JetBrains Mono';cursor:pointer}
+.tab.on{background:var(--c);border-color:var(--c);color:#0a0e1f;box-shadow:0 0 20px color-mix(in srgb,var(--c) 55%,transparent)}
+.gantt{display:flex;height:56px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.gb{display:flex;align-items:center;justify-content:center;font:700 .8rem 'JetBrains Mono';color:#0a0e1f;min-width:22px;border-right:1px solid #0a0e1f;animation:grow .5s both;transform-origin:left}
+.gb.idle{background:repeating-linear-gradient(45deg,#161c3a,#161c3a 6px,#1d2447 6px,#1d2447 12px);color:var(--mu)}
+@keyframes grow{from{transform:scaleX(0)}}
+.ticks{display:flex;font:500 .68rem 'JetBrains Mono';color:var(--mu);margin:5px 0 18px}.ticks span{position:relative}
+table{width:100%;border-collapse:collapse;font:500 .82rem 'JetBrains Mono'}
+th{text-align:left;color:var(--mu);font-size:.65rem;text-transform:uppercase;padding:7px;border-bottom:1px solid var(--line)}td{padding:8px 7px;border-bottom:1px solid #1c2348}
+.avg td{color:var(--ac);font-weight:700;border:0}
+.bars{margin-top:22px}.bar{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin-bottom:9px;font:500 .78rem 'JetBrains Mono';cursor:pointer}
+.bar div{height:14px;background:#0a0e1f;border-radius:7px;overflow:hidden}.bar i{display:block;height:100%;background:var(--c);border-radius:7px;box-shadow:0 0 12px var(--c);transition:width .6s}
+.empty{text-align:center;color:var(--mu);padding:60px 10px;font:500 .9rem 'JetBrains Mono'}
+footer{padding:40px 0;text-align:center;color:var(--mu);font-size:.85rem;border-top:1px solid var(--line)}
+@media(max-width:900px){.hero .wrap,.two,.grid{grid-template-columns:1fr}nav a:not(.btn){display:none}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><div class="logo">Scheduler<b>Lab</b></div><a href="#learn">Learn</a><a href="#algos">Algorithms</a><a class="btn" href="#solver">Open Solver</a></div></nav>
+
+<header class="hero"><div class="wrap">
+<div>
+<span class="tag">Operating Systems Project</span>
+<h1>Visualize every <span class="grad">CPU scheduling</span> algorithm in one click</h1>
+<p>Enter your processes once. FCFS, SJF, SRTF, Priority and Round Robin all run together — with Gantt charts, turnaround &amp; waiting times, and an automatic verdict on the best method.</p>
+<a class="btn" href="#solver">Try the Solver →</a>
+<div class="stats"><div><b>6</b><span>Algorithms</span></div><div><b>1 click</b><span>Solve all</span></div><div><b>Live</b><span>Gantt charts</span></div></div>
+</div>
+<svg class="float" viewBox="0 0 400 360" role="img" aria-label="CPU chip illustration">
+<defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+<g stroke="#818cf8" stroke-width="5" stroke-linecap="round" opacity=".7">
+<path d="M130 60v40M170 60v40M210 60v40M250 60v40M130 260v40M170 260v40M210 260v40M250 260v40M70 120h40M70 160h40M70 200h40M70 240h40M290 120h40M290 160h40M290 200h40M290 240h40"/></g>
+<rect x="105" y="95" width="190" height="170" rx="22" fill="url(#g1)"/>
+<rect x="125" y="115" width="150" height="130" rx="14" fill="#0a0e1f" opacity=".85"/>
+<text x="200" y="192" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="34" fill="#fff">CPU</text>
+<g font-family="JetBrains Mono" font-size="13" font-weight="700" fill="#0a0e1f">
+<rect x="20" y="300" width="46" height="30" rx="8" fill="#fbbf24"/><text x="43" y="320" text-anchor="middle">P1</text>
+<rect x="76" y="300" width="46" height="30" rx="8" fill="#34d399"/><text x="99" y="320" text-anchor="middle">P2</text>
+<rect x="132" y="300" width="46" height="30" rx="8" fill="#60a5fa"/><text x="155" y="320" text-anchor="middle">P3</text>
+<rect x="188" y="300" width="46" height="30" rx="8" fill="#f472b6"/><text x="211" y="320" text-anchor="middle">P4</text></g>
+<path d="M250 315h60" stroke="#818cf8" stroke-width="4" stroke-dasharray="6 6"/><path d="M304 306l12 9-12 9" fill="none" stroke="#818cf8" stroke-width="4"/>
+</svg>
+</div></header>
+
+<section id="learn"><div class="wrap">
+<div class="sh"><h2>What is CPU scheduling?</h2><p>A computer has many programs but few CPU cores. The scheduler decides which process runs next — and for how long.</p></div>
+<div class="two">
+<svg viewBox="0 0 460 250" role="img" aria-label="Ready queue to CPU diagram">
+<rect x="10" y="30" width="270" height="80" rx="14" fill="#121833" stroke="#27305a" stroke-width="2"/>
+<text x="24" y="22" font-family="JetBrains Mono" font-size="12" fill="#9aa3d0">READY QUEUE</text>
+<g font-family="JetBrains Mono" font-size="14" font-weight="700" fill="#0a0e1f">
+<rect x="24" y="52" width="54" height="38" rx="9" fill="#fbbf24"/><text x="51" y="76" text-anchor="middle">P1</text>
+<rect x="90" y="52" width="54" height="38" rx="9" fill="#34d399"/><text x="117" y="76" text-anchor="middle">P2</text>
+<rect x="156" y="52" width="54" height="38" rx="9" fill="#60a5fa"/><text x="183" y="76" text-anchor="middle">P3</text>
+<rect x="222" y="52" width="46" height="38" rx="9" fill="#f472b6"/><text x="245" y="76" text-anchor="middle">P4</text></g>
+<path d="M285 70h50" stroke="#818cf8" stroke-width="4"/><path d="M328 60l12 10-12 10" fill="none" stroke="#818cf8" stroke-width="4"/>
+<rect x="345" y="30" width="105" height="80" rx="14" fill="url(#g1)"/>
+<text x="397" y="78" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="22" fill="#fff">CPU</text>
+<text x="10" y="160" font-family="JetBrains Mono" font-size="12" fill="#9aa3d0">GANTT CHART</text>
+<g font-family="JetBrains Mono" font-size="12" font-weight="700" fill="#0a0e1f">
+<rect x="10" y="172" width="80" height="40" fill="#fbbf24"/><text x="50" y="197" text-anchor="middle">P1</text>
+<rect x="90" y="172" width="60" height="40" fill="#34d399"/><text x="120" y="197" text-anchor="middle">P2</text>
+<rect x="150" y="172" width="110" height="40" fill="#60a5fa"/><text x="205" y="197" text-anchor="middle">P3</text>
+<rect x="260" y="172" width="90" height="40" fill="#f472b6"/><text x="305" y="197" text-anchor="middle">P4</text></g>
+<g font-family="JetBrains Mono" font-size="11" fill="#9aa3d0"><text x="10" y="232">0</text><text x="86" y="232">5</text><text x="146" y="232">8</text><text x="256" y="232">16</text><text x="342" y="232">22</text></g>
+</svg>
+<div>
+<div class="card"><h3 style="margin-bottom:8px">Why it matters</h3><p style="margin:0;color:var(--mu)">A good algorithm keeps processes from waiting too long, makes the CPU busy, and treats every program fairly. Different workloads need different algorithms — that is why we compare them all.</p></div>
+<div class="terms">
+<div class="card"><b>ARRIVAL (AT)</b><p>When the process enters the queue.</p></div>
+<div class="card"><b>BURST (BT)</b><p>CPU time the process needs.</p></div>
+<div class="card"><b>TURNAROUND</b><p>CT − AT. Total time in system.</p></div>
+<div class="card"><b>WAITING</b><p>TAT − BT. Time spent waiting.</p></div>
+</div></div></div>
+</div></section>
+
+<section id="algos"><div class="wrap">
+<div class="sh"><h2>The 6 algorithms</h2><p>Each one makes a different trade-off between speed, fairness and simplicity.</p></div>
+<div class="algos" id="algoCards"></div>
+</div></section>
+
+<section class="solver" id="solver"><div class="wrap">
+<div class="sh"><h2>Interactive solver</h2><p>Edit the processes below and press Solve — all six algorithms run on the same input.</p></div>
+<div class="grid">
+<div class="card">
+<label>Time quantum (Round Robin)</label><input type="number" id="q" min="1" value="2" style="margin-bottom:16px">
+<div class="row h"><span>Proc</span><span>Arrival</span><span>Burst</span><span>Priority</span><span></span></div>
+<div id="rows"></div>
+<button class="add" id="addBtn">+ add process</button>
+<button class="btn" id="solve" style="width:100%">Solve with all 6 algorithms →</button>
+<p id="err" style="color:#f87171;font-size:.8rem;margin:10px 0 0"></p>
+<p style="color:var(--mu);font-size:.75rem;margin:12px 0 0">Lower priority number = higher priority.</p>
+</div>
+<div class="card" id="out"><div class="empty">_ press “Solve” to generate every Gantt chart</div></div>
+</div>
+</div></section>
+
+<footer><div class="wrap">Built with HTML, CSS &amp; JavaScript · SchedulerLab OS Project · Open source on GitHub</div></footer>
+
+<script>
+const A=[
+{id:'fcfs',n:'First Come First Serve',s:'FCFS',c:'#60a5fa',d:'Processes run strictly in arrival order, like a queue at a ticket counter.',p:'Simple, fair order',x:'Convoy effect — short jobs stuck behind a long one.'},
+{id:'sjf',n:'Shortest Job First',s:'SJF',c:'#34d399',d:'Among arrived processes, the one with the smallest burst runs next, to completion.',p:'Low average waiting',x:'Needs burst time in advance; long jobs may starve.'},
+{id:'srtf',n:'Shortest Remaining Time',s:'SRTF',c:'#22d3ee',d:'Preemptive SJF — a newly arrived shorter job interrupts the running one.',p:'Minimum possible waiting time',x:'Many context switches; theoretical benchmark.'},
+{id:'pnp',n:'Priority (Non-preemptive)',s:'Priority NP',c:'#fbbf24',d:'The most important process runs first and keeps the CPU until it finishes.',p:'Handles urgent tasks',x:'Low-priority processes can starve.'},
+{id:'pp',n:'Priority (Preemptive)',s:'Priority P',c:'#fb923c',d:'A higher-priority arrival immediately takes the CPU from the running process.',p:'Instant response to urgent work',x:'Starvation and extra switching.'},
+{id:'rr',n:'Round Robin',s:'RR',c:'#c084fc',d:'Every process gets a fixed time slice (quantum), then goes to the back of the queue.',p:'Fair, good response time',x:'Higher average waiting if quantum is poorly chosen.'}];
+const PC=['#fbbf24','#34d399','#60a5fa','#f472b6','#a78bfa','#fb923c','#22d3ee','#a3e635'];
+const col=id=>PC[(parseInt(id.replace(/\D/g,''))-1+80)%PC.length];
+const $=s=>document.querySelector(s);
+$('#algoCards').innerHTML=A.map((a,i)=>`<div class="card algo" style="--c:${a.c}"><i>0${i+1}</i><h3>${a.n}</h3><p>${a.d}</p><small><b>＋</b> ${a.p}</small><small><b>−</b> ${a.x}</small></div>`).join('');
+let P=[[0,5,2],[1,3,1],[2,8,3],[3,6,4]].map((v,i)=>({id:'P'+(i+1),at:v[0],bt:v[1],pr:v[2]}));
+function draw(){$('#rows').innerHTML=P.map((p,i)=>`<div class="row"><b class="mono" style="font-size:.85rem"><span class="dot" style="background:${col(p.id)}"></span>${p.id}</b>`+['at','bt','pr'].map(k=>`<input type="number" min="${k=='bt'?1:0}" value="${p[k]}" data-i="${i}" data-k="${k}">`).join('')+`<button class="x" data-r="${i}">×</button></div>`).join('')}
+$('#rows').addEventListener('input',e=>{const t=e.target;if(t.dataset.k)P[t.dataset.i][t.dataset.k]=+t.value});
+$('#rows').addEventListener('click',e=>{const r=e.target.dataset.r;if(r!==undefined&&P.length>1){P.splice(r,1);draw()}});
+$('#addBtn').onclick=()=>{P.push({id:'P'+(P.length+1),at:0,bt:1,pr:1});draw()};
+function sim(kind){
+ const s=P.map((p,i)=>({...p,i,rem:p.bt})),g=[],ct={};let t=0,done=0,cur=null;
+ const cmp={fcfs:(a,b)=>a.at-b.at||a.i-b.i,sjf:(a,b)=>a.rem-b.rem||a.at-b.at||a.i-b.i,srtf:(a,b)=>a.rem-b.rem||a.at-b.at||a.i-b.i,pnp:(a,b)=>a.pr-b.pr||a.at-b.at||a.i-b.i,pp:(a,b)=>a.pr-b.pr||a.at-b.at||a.i-b.i}[kind];
+ const pre=kind=='srtf'||kind=='pp';
+ while(done<s.length&&t<100000){
+  if(!(cur&&cur.rem>0&&!pre)){const av=s.filter(p=>p.rem>0&&p.at<=t).sort(cmp);cur=av[0]||null}
+  const id=cur?cur.id:null,l=g[g.length-1];
+  if(l&&l.id===id&&l.e===t)l.e++;else g.push({id,s:t,e:t+1});
+  t++;if(cur){cur.rem--;if(!cur.rem){ct[cur.id]=t;done++;cur=null}}
+ }
+ return fin(g,ct)}
+function rr(Q){
+ const s=P.map((p,i)=>({...p,i,rem:p.bt})).sort((a,b)=>a.at-b.at||a.i-b.i),q=[],g=[],ct={};let t=0,k=0,done=0;
+ const adm=()=>{while(k<s.length&&s[k].at<=t)q.push(s[k++])};adm();
+ while(done<s.length){
+  if(!q.length){const n=s[k].at;g.push({id:null,s:t,e:n});t=n;adm();continue}
+  const c=q.shift(),r=Math.min(Q,c.rem);g.push({id:c.id,s:t,e:t+r});t+=r;c.rem-=r;adm();
+  if(c.rem)q.push(c);else{ct[c.id]=t;done++}
+ }
+ return fin(g,ct)}
+function fin(g,ct){
+ const rows=P.map(p=>{const c=ct[p.id],tat=c-p.at;return{...p,ct:c,tat,wt:tat-p.bt}});
+ const av=k=>rows.reduce((a,r)=>a+r[k],0)/rows.length;
+ return{g,rows,tat:av('tat'),wt:av('wt')}}
+const REA={fcfs:'It only shines when processes already arrive in an efficient order.',sjf:'Short jobs finish quickly, which keeps the average wait low.',srtf:'It is proven to give the minimum possible average waiting time.',pnp:'It rewards urgent tasks, though low-priority jobs may starve.',pp:'It reacts instantly to urgent work, at the cost of more switching.',rr:'It is built for fairness and responsiveness, not minimum waiting.'};
+let R,rank,act;
+$('#solve').onclick=()=>{
+ const e=$('#err');e.textContent='';
+ const ids=P.map(p=>p.id);
+ if(P.some(p=>!(p.bt>0)||p.at<0||isNaN(p.at)||isNaN(p.pr))){e.textContent='Burst must be > 0 and values must be valid numbers.';return}
+ const Q=Math.max(1,+$('#q').value||1);
+ R={};A.forEach(a=>R[a.id]=a.id=='rr'?rr(Q):sim(a.id));
+ rank=A.map(a=>({...a,...R[a.id]})).sort((a,b)=>a.wt-b.wt);act=rank[0].id;show()};
+function show(){
+ const b=rank[0],w=rank[rank.length-1],pct=Math.round((w.wt-b.wt)/Math.max(b.wt,.01)*100),o=R[act],a=A.find(x=>x.id==act);
+ const tot=o.g[o.g.length-1].e;
+ const mx=Math.max(...rank.map(r=>r.wt),1);
+ const ts=[...new Set([0,...o.g.map(x=>x.e)])];
+ $('#out').innerHTML=`
+ <div class="win" style="--wc:${b.c}"><small>🏆 Best algorithm for this input</small><h3>${b.n}</h3>
+ <ol><li>${b.s} gives the lowest average waiting time: <b>${b.wt.toFixed(2)}</b> units.</li>
+ <li>Its average turnaround time is <b>${b.tat.toFixed(2)}</b> units.</li>
+ <li>${REA[b.id]}</li>
+ <li>${w.s} is the worst here (${w.wt.toFixed(2)}) — about ${pct}% more waiting.</li>
+ <li>“Best” depends on the goal: SJF/SRTF minimise waiting, Round Robin maximises fairness.</li></ol></div>
+ <div class="tabs">${A.map(x=>`<button class="tab ${x.id==act?'on':''}" style="--c:${x.c}" data-a="${x.id}">${x.s}${x.id==b.id?' 🏆':''}</button>`).join('')}</div>
+ <div class="gantt">${o.g.map(x=>`<div class="gb ${x.id?'':'idle'}" style="flex:${x.e-x.s};background:${x.id?col(x.id):''}">${x.id||'idle'}</div>`).join('')}</div>
+ <div class="ticks">${ts.map((t,i)=>`<span style="flex:${i<ts.length-1?ts[i+1]-t:0}">${t}</span>`).join('')}</div>
+ <table><tr><th>Proc</th><th>AT</th><th>BT</th><th>CT</th><th>TAT</th><th>WT</th></tr>
+ ${o.rows.map(r=>`<tr><td><span class="dot" style="background:${col(r.id)}"></span>${r.id}</td><td>${r.at}</td><td>${r.bt}</td><td>${r.ct}</td><td>${r.tat}</td><td>${r.wt}</td></tr>`).join('')}
+ <tr class="avg"><td colspan="4">Average (${a.s})</td><td>${o.tat.toFixed(2)}</td><td>${o.wt.toFixed(2)}</td></tr></table>
+ <div class="bars"><label>Ranking by average waiting time</label>${rank.map((r,i)=>`<div class="bar" style="--c:${r.c}" data-a="${r.id}"><span>${['🥇','🥈','🥉'][i]||'#'+(i+1)} ${r.s}</span><div><i style="width:${Math.max(r.wt/mx*100,4)}%"></i></div><span>${r.wt.toFixed(2)}</span></div>`).join('')}</div>`}
+$('#out').addEventListener('click',e=>{const t=e.target.closest('[data-a]');if(t){act=t.dataset.a;show()}});
+draw();
+</script>
+</body>
+</html>
